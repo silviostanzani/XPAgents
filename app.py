@@ -24,10 +24,18 @@ def load_data():
     return sorted(data, key=lambda x: x['filename'], reverse=True)
 
 st.sidebar.title("Navegação")
-menu = st.sidebar.radio("Ir para:", ["📊 Dashboard de Simulações", "✏️ Editor da Base de Conhecimento"])
+menu = st.sidebar.radio("Ir para:", ["📊 Dashboard de Simulações", "✏️ Editor da Base de Conhecimento", "🚀 Executar Simulação"])
 
 if menu == "📊 Dashboard de Simulações":
-    st.title("📊 Resultados das Simulações")
+    col_title, col_btn = st.columns([8, 1])
+    with col_title:
+        st.title("📊 Resultados das Simulações")
+    with col_btn:
+        st.write("")
+        if st.button("🔄 Atualizar"):
+            load_data.clear()
+            st.rerun()
+
     
     data = load_data()
     
@@ -200,3 +208,81 @@ elif menu == "✏️ Editor da Base de Conhecimento":
                     st.error(f"Erro ao salvar arquivo: {e}")
         else:
             st.info("👈 Selecione um arquivo existente à esquerda ou digite um nome para criar um novo arquivo.")
+
+elif menu == "🚀 Executar Simulação":
+    import subprocess
+    st.title("🚀 Executar Nova Simulação")
+    st.write("Configure os parâmetros abaixo e inicie uma nova simulação.")
+    
+    col1, col2 = st.columns(2)
+    
+    def get_options_for(category):
+        path = os.path.join(KB_DIR, category)
+        if not os.path.exists(path):
+            return []
+        files = glob.glob(os.path.join(path, "*.md")) + glob.glob(os.path.join(path, "*.txt"))
+        names = [os.path.splitext(os.path.basename(f))[0] for f in files]
+        return sorted(list(set(names)))
+        
+    with col1:
+        st.subheader("📚 Perfis Base (KB)")
+        empresa = st.selectbox("Empresa", get_options_for("empresa"))
+        cliente = st.selectbox("Cliente", get_options_for("cliente"))
+        servico = st.selectbox("Serviço", get_options_for("servico"))
+        contato = st.selectbox("Contato", get_options_for("contato"))
+        
+    with col2:
+        st.subheader("⚙️ Parâmetros Técnicos")
+        iniciador = st.selectbox("Quem Inicia?", ["cliente", "empresa", ""])
+        modelo = st.text_input("Modelo LLM", value="gemini-3.8-flash")
+        trocas = st.number_input("Número de Trocas", min_value=1, max_value=20, value=6)
+        encerra = st.checkbox("Permitir Encerramento Antecipado", value=True)
+        temp_emp = st.slider("Temperatura Empresa", 0.0, 1.0, 0.6)
+        temp_cli = st.slider("Temperatura Cliente", 0.0, 1.0, 0.8)
+        
+    if st.button("▶️ Iniciar Simulação", type="primary"):
+        config = {
+            "empresa": empresa,
+            "cliente": cliente,
+            "servico": servico,
+            "contato": contato,
+            "iniciador": iniciador if iniciador else None,
+            "modelo": modelo,
+            "trocas": trocas,
+            "encerramento_antecipado": encerra,
+            "temperatura_empresa": temp_emp,
+            "temperatura_cliente": temp_cli
+        }
+        
+        config_path = "/tmp/sim_config.json"
+        with open(config_path, "w") as f:
+            json.dump(config, f)
+            
+        st.info("Simulação iniciada! Aguarde a conclusão... O processo pode levar de alguns segundos a minutos dependendo do LLM.")
+        
+        # Executing the simulation script
+        script_path = "/home/silvio/git/XPAgents/src/Simulation.py"
+        try:
+            # We assume python3 or the current environment python is appropriate.
+            # Using st.spinner to hold the UI
+            with st.spinner("Rodando agentes..."):
+                result = subprocess.run(
+                    ["python3", script_path, "--config", config_path],
+                    capture_output=True,
+                    text=True
+                )
+            
+            if result.returncode == 0:
+                st.success("✅ Simulação concluída com sucesso!")
+                with st.expander("Ver Log da Execução"):
+                    st.text(result.stdout)
+                # Clear cache so next time Dashboard is loaded it shows the new simulation
+                load_data.clear()
+            else:
+                st.error("❌ Erro na simulação.")
+                with st.expander("Ver Erro"):
+                    st.text(result.stderr)
+                    st.text(result.stdout)
+                    
+        except Exception as e:
+            st.error(f"Erro ao executar processo: {e}")
