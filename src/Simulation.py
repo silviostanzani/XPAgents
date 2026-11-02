@@ -423,19 +423,41 @@ CONFIG = {
     "verbose": True,
 }
 
-if __name__ == "__main__":
-    exec_dir, base_dir, saida_dir = resolver_diretorios(CONFIG)
-    print(f"Iniciando simulação com CrewAI e Google Gemini ({CONFIG['modelo']})...\n")
+import argparse
+import json
+
+def main():
+    parser = argparse.ArgumentParser(description="Simulador de negociações XPAgents")
+    parser.add_argument("--config", "-c", type=str, help="Caminho para um arquivo JSON de configuração (opcional)")
+    args = parser.parse_args()
+    
+    config_final = CONFIG.copy()
+    
+    if args.config:
+        try:
+            with open(args.config, 'r', encoding='utf-8') as f:
+                user_config = json.load(f)
+                config_final.update(user_config)
+            print(f"Configuração carregada do arquivo: {args.config}\n")
+        except Exception as e:
+            print(f"Erro ao carregar o arquivo de configuração {args.config}: {e}")
+            print("Usando configurações padrão.\n")
+
+    exec_dir, base_dir, saida_dir = resolver_diretorios(config_final)
+    print(f"Iniciando simulação com CrewAI e modelo: {config_final['modelo']}...\n")
     print(f"Diretórios:")
     print(f"  - Execução: {exec_dir}")
     print(f"  - Base de conhecimento (KB): {base_dir}")
     print(f"  - Resultados: {saida_dir}")
     print(f"Perfis:")
-    print(f"  - Empresa: {CONFIG['empresa']}")
-    print(f"  - Cliente: {CONFIG['cliente']}")
-    print(f"  - Serviço: {CONFIG['servico']}")
-    print(f"  - Contato: {CONFIG['contato']}")
+    print(f"  - Empresa: {config_final['empresa']}")
+    print(f"  - Cliente: {config_final['cliente']}")
+    print(f"  - Serviço: {config_final['servico']}")
+    print(f"  - Contato: {config_final['contato']}")
     print("-" * 70 + "\n")
 
-    resultado = simular(CONFIG)
+    resultado = simular(config_final)
     mostrar(resultado)
+
+if __name__ == "__main__":
+    main()
