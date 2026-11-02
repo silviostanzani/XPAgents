@@ -1,0 +1,20 @@
+{
+  "exec_dir": "/home/silvio/XPAgents",
+  "base_dir": "/home/silvio/XPAgents/kb",
+  "saida_dir": "/home/silvio/XPAgents/resultados",
+  "empresa": "empresa_beta",
+  "cliente": "cliente_cetico",
+  "servico": "plano_premium",
+  "contato": "ativo_oferta",
+  "iniciador": "empresa",
+  "trocas": 4,
+  "encerramento_antecipado": false,
+  "provedor": "gemini",
+  "modelo": "gemini-3.1-pro-preview",
+  "temperatura_empresa": 0.4,
+  "temperatura_cliente": 0.9,
+  "max_tokens_fala": 200,
+  "max_tokens_analise": 1500,
+  "idioma": "português do Brasil",
+  "verbose": false
+}

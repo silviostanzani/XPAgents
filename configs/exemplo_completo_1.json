@@ -1,0 +1,20 @@
+{
+  "exec_dir": "/home/silvio/XPAgents",
+  "base_dir": "/home/silvio/XPAgents/kb",
+  "saida_dir": "/home/silvio/XPAgents/resultados",
+  "empresa": "empresa_alfa",
+  "cliente": "cliente_receptivo_mariana",
+  "servico": "plano_fibra_negocios",
+  "contato": "receptivo_problema",
+  "iniciador": "cliente",
+  "trocas": 6,
+  "encerramento_antecipado": true,
+  "provedor": "gemini",
+  "modelo": "gemini-3.8-flash",
+  "temperatura_empresa": 0.6,
+  "temperatura_cliente": 0.8,
+  "max_tokens_fala": 300,
+  "max_tokens_analise": 2000,
+  "idioma": "português do Brasil",
+  "verbose": true
+}
